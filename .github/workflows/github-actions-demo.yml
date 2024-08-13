@@ -19,7 +19,6 @@ jobs:
 
       - name: Create DownMerge Branch
         run: |
-          git checkout -b downmerge-master
           git push origin downmerge-master
 
       - name: Create Pull Request
@@ -32,7 +31,7 @@ jobs:
           
       - name: Clean up downmerge branch
         run: |
-          git push origin --delete downmerge-master
+          git push origin -delete downmerge-master
 
 
 
