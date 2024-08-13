@@ -26,6 +26,7 @@ public class Actor {
 	
 	public void fillActorsHashMap() {
 		actors=new HashMap<Integer,ArrayList<Actor>>();
+		System.out.println("ESKERE");
 		DatabaseFactory a=new DatabaseFactory();
 		actorsList=a.allTheActors();
 		for(String[] actor:actorsList){
