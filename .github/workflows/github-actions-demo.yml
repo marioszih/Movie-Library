@@ -4,10 +4,17 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed
+      
 jobs:
   downmerge:
     runs-on: ubuntu-latest
-
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,23 +23,12 @@ jobs:
         run: |
           git config user.name "GitHub Action"
           git config user.email "actions@github.com"
-
-      - name: Create DownMerge Branch
-        run: |
-          git push origin downmerge-master
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           base: develop
-          head: downmerge-master
-          title: 'Downmerge master into develop'
-          body: 'This PR downmerges the changes from master into develop.'
-          
-      - name: Clean up downmerge branch
-        run: |
-          git push origin -delete downmerge-master
-
-
-
-          
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          assignees: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          branch: main
+          title: 'Downmerge main into develop'
+          body: 'This PR downmerges the changes from main into develop.'
