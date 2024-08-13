@@ -27,8 +27,7 @@ public class Actor {
 	public void fillActorsHashMap() {
 		actors=new HashMap<Integer,ArrayList<Actor>>();
 		DatabaseFactory a=new DatabaseFactory();
-		
-		actorsList=a.allTheActors();
+		actorsList=a.allTheActor;
 		for(String[] actor:actorsList){
 			Actor y=new Actor(actor[0],actor[1],actor[2],actor[3]);
 			if(actors.containsKey(Integer.parseInt(actor[0]))){
