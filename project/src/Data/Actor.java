@@ -28,16 +28,16 @@ public class Actor {
 		actors=new HashMap<Integer,ArrayList<Actor>>();
 		DatabaseFactory a=new DatabaseFactory();
 		actorsList=a.allTheActors();
-		for(String[] x:actorsList){
-			Actor y=new Actor(x[0],x[1],x[2],x[3]);
-			if(actors.containsKey(Integer.parseInt(x[0]))){
-				actors.get(Integer.parseInt(x[0])).add(y);
-				actors.put(Integer.parseInt(x[0]),actors.get(Integer.parseInt(x[0])));
+		for(String[] actor:actorsList){
+			Actor y=new Actor(actor[0],actor[1],actor[2],actor[3]);
+			if(actors.containsKey(Integer.parseInt(actor[0]))){
+				actors.get(Integer.parseInt(actor[0])).add(y);
+				actors.put(Integer.parseInt(actor[0]),actors.get(Integer.parseInt(actor[0])));
 			}
 			else {
 				ArrayList<Actor> z= new ArrayList<Actor>();
 				z.add(y);
-				actors.put(Integer.parseInt(x[0]),z);
+				actors.put(Integer.parseInt(actor[0]),z);
 			}
 		}
 	}
