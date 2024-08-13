@@ -27,7 +27,7 @@ jobs:
           git config --global user.email "actions@github.com"
 
       - name: Create Pull Request
-        if: github.reg == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         run: |
           git fetch origin
           git checkout develop
