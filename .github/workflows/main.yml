@@ -30,7 +30,7 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           base: develop
-          branch: main-to-develop-pr
+          branch: main
           title: 'Downmerge main into develop'
           body: 'This PR downmerges the changes from main into develop for review.'
           create-draft: false
