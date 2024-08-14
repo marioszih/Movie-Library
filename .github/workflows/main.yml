@@ -18,11 +18,10 @@ jobs:
         with:
           fetch-depth: 0
           
+
       - name: pull-request
-        uses: diillson/auto-pull-request@v1.0.1
-        with:
-          destination_branch: "develop"
-          pr_assignee: ${{ github.event.pull_request.user.login }}
-          pr_title: "Pulling main into develop"
-          pr_body: |
-            :crown: *An automated PR*
+        run: |
+            gh pr create 
+            --base develop 
+            --title "Merge main into develop" 
+            --body 'Created by Github action'
