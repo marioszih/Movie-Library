@@ -27,4 +27,7 @@ jobs:
         uses: diillson/auto-pull-request@v1.0.1
         with:
           destination_branch: "develop"
-          pr_reviewer: ${{ github.event.pull_request.user.login }}
+          pr_assignee: ${{ github.event.pull_request.user.login }}
+          pr_title: "Pulling main into develop"
+          pr_body: |
+            :crown: *An automated PR*
