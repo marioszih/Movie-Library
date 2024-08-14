@@ -34,13 +34,18 @@ jobs:
           git merge main
           git push origin develop
 
-      - name: I break things
+      - name: pull-request
         uses: diillson/auto-pull-request@v1.0.1
         with:
-          source_branch: ""
-          destination_branch: "develop"               
-          pr_title: "Pulling ${{ github.ref }} into develop"
-          pr_body: |
-            :crown: *An automated PR*
-          pr_reviewer: "{{ github.event.pull_request.user.login }}"
-          pr_label: "auto-generated-pr"
+          destination_branch: "develop"
+
+      # - name: I break things
+      #   uses: diillson/auto-pull-request@v1.0.1
+      #   with:
+      #     source_branch: ""
+      #     destination_branch: "develop"               
+      #     pr_title: "Pulling ${{ github.ref }} into develop"
+      #     pr_body: |
+      #       :crown: *An automated PR*
+      #     pr_reviewer: "{{ github.event.pull_request.user.login }}"
+      #     pr_label: "auto-generated-pr"
