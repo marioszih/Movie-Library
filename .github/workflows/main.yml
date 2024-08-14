@@ -18,12 +18,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
           
 
       - name: pull-request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-            gh pr create --base develop --title "Merge main into develop" --body 'Created by Github action'
+            gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
