@@ -20,8 +20,7 @@ jobs:
           
 
       - name: pull-request
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-            gh pr create 
-            --base develop 
-            --title "Merge main into develop" 
-            --body 'Created by Github action'
+            gh pr create --base develop --title "Merge main into develop" --body 'Created by Github action'
