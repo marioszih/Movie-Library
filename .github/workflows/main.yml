@@ -19,8 +19,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
           
+      - name: Add a delay to avoid race conditions
+        run: sleep 10 
 
-      - name: pull-request
+      - name: create pull-request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
