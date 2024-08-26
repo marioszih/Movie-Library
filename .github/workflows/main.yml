@@ -48,7 +48,7 @@ jobs:
                 fi
               done
             fi
-            echo "oldest_branch=$oldest_branch" >> $GITHUB_ENV
-            - name: Use oldest branch
-            run: |
-              echo "The oldest branch is ${{ env.oldest_branch }}"
+            echo "oldest_branch=$oldest_branch"
+      - name: Use oldest branch
+        run: |
+          echo "The oldest branch is ${{ env.oldest_branch }}"
