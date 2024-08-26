@@ -32,3 +32,4 @@ jobs:
             git fetch --all
             export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
             echo "$BRANCHES"
+            
