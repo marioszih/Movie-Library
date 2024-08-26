@@ -31,5 +31,8 @@ jobs:
         run: |
             git fetch --all
             export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
-            echo "$BRANCHES"
-            
+            if [ -z "$BRANCHES" ]; then
+              echo "No release branches found."
+            else
+              echo "$BRANCHES"
+            fi
