@@ -48,7 +48,7 @@ jobs:
                 fi
               done
             fi
-            echo oldest_branch
+            echo $oldest_branch
       # - name: downmerge main to earliest release branch
       #   run: |
       #       gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
