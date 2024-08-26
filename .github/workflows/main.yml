@@ -27,12 +27,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
             gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
+
       - name: get release branches
         run: |
             git fetch --all
             export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
+            oldest_branch=""
             if [ -z "$BRANCHES" ]; then
               echo "No release branches found."
             else
-              echo "$BRANCHES"
+              for branch in $BRANCHES; do
+                current_version=${branch#release/}
+                if [ -z "$oldest_branch" ]; then
+                  oldest_branch=$branch
+                else
+                  oldest_version=${oldest_branch#release/}
+                  if [ "$(printf '%s\n' "$oldest_version" "$current_version" | sort -V | head -n1)" = "$current_version" ]; then
+                    oldest_branch=$branch
+                  fi
+                fi
+              done
             fi
+            echo oldest_branch
+      # - name: downmerge main to earliest release branch
+      #   run: |
+      #       gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
