@@ -27,3 +27,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
             gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
+      - name: get release branches
+        run: |
+            export BRANCHES = $(git branch -r)
+            echo "$BRANCHES"
