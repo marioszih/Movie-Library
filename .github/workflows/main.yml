@@ -29,6 +29,6 @@ jobs:
             gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
       - name: get release branches
         run: |
+            git fetch --all
             export BRANCHES=$(git branch -r)
             echo "$BRANCHES"
-            
