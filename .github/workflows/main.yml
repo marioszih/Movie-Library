@@ -29,8 +29,6 @@ jobs:
 
       - name: Check if PR exists
         id: check
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
@@ -39,17 +37,15 @@ jobs:
               --json title \
               --jq 'length')
           if ((prs > 0)); then
-            echo "skip=true" >> $GITHUB_ENV
+            echo "skip=true" >> "$GITHUB_OUTPUT"
           else
-            echo "skip=false" >> $GITHUB_ENV
+            echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: create pull-request
-        if: ${{ steps.check.outputs.skip == 'false' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
+        if: '!steps.check.outputs.skip'
         run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
       
       - name: PR Already Exists Message
-        if: ${{ steps.check.outputs.skip == 'true' }}
+        if: 'steps.check.outputs.skip'
         run: echo "A pull request from develop to main already exists, skipping creation."
