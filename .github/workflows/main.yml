@@ -48,6 +48,8 @@ jobs:
 
       - name: Create pull request
         if: ${{ steps.check.outputs.skip  == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
