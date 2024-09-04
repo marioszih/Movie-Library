@@ -49,8 +49,8 @@ jobs:
               echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
-      # - name: Debug skip variable
-      #   run: echo "The skip variable is set to ${{ env.skip }}"
+      - name: Debug skip variable
+        run: echo "The skip variable is set to ${{ steps.check.outputs.skip }}"
 
       - name: Create pull request
         if: ${{ steps.check.outputs.skip }} == false
