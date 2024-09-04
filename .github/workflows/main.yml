@@ -33,7 +33,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Initialize skip with a default value
-          echo "skip=false" >> "$GITHUB_ENV"
+          echo "skip=false" >> $GITHUB_ENV
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
               --head 'develop' \
@@ -41,7 +41,7 @@ jobs:
               --json title \
               --jq 'length')
           if ((prs > 0)); then
-              echo "skip=true" >> "$GITHUB_ENV"
+              echo "skip=true" >> $GITHUB_ENV
           fi
       - name: create pull-request
         if: ${{ env.skip == 'false' }}
