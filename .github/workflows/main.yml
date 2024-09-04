@@ -18,7 +18,8 @@ jobs:
       - name: Fetch and reset to the latest state of remote main branch
         run: |
           git fetch origin main
-          git reset --hard origin/main
+          git checkout main
+          git pull origin main
 
   downmerge:
     runs-on: ubuntu-latest
