@@ -47,11 +47,11 @@ jobs:
       - name: create pull-request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: '!steps.check.outputs.skip'
+        if: 'steps.check.outputs.skip == false'
         run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
       
       - name: PR Already Exists Message
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: 'steps.check.outputs.skip'
+        if: 'steps.check.outputs.skip == true'
         run: echo "A pull request from develop to main already exists, skipping creation."
