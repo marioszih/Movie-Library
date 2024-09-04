@@ -32,26 +32,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Initialize skip with a default value
+          echo "skip=false" >> $GITHUB_ENV
+          
+          # Print the current branch and repo for debugging
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Checking PRs from develop to main..."
+
+          # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
               --head 'develop' \
               --base 'main' \
               --json title \
-              --jq 'length')
-          if ((prs > 0)); then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
+              --jq 'length' || echo "Error")
+          
+          echo "PRs count: $prs"
+          
+          if [[ "$prs" == "Error" ]]; then
+            echo "Error in listing PRs"
+          elif ((prs > 0)); then
+              echo "skip=true" >> $GITHUB_ENV
           else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
+              echo "skip=false" >> $GITHUB_ENV
           fi
 
-      - name: create pull-request
+      - name: Debug skip variable
+        run: echo "The skip variable is set to ${{ env.skip }}"
+
+      - name: Create pull request
+        if: ${{ env.skip == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: 'steps.check.outputs.skip == false'
-        run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
-      
+        run: |
+          echo "Creating pull request..."
+          gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+
       - name: PR Already Exists Message
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: 'steps.check.outputs.skip == true'
+        if: ${{ env.skip == 'true' }}
         run: echo "A pull request from develop to main already exists, skipping creation."
