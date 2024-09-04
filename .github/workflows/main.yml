@@ -39,10 +39,12 @@ jobs:
               --base 'develop' \
               --json title \
               --jq 'length' || echo "Error")
-          
+          prs="Error"
           echo "PRs count: $prs"
           if [[ "$prs" == "Error" ]]; then
-            echo "Error in listing PRs"
+            echo "The workflow encountered a problem."
+            gh run cancel ${{ github.run_id }}
+            gh run watch ${{ github.run_id }}
           elif ((prs > 0)); then
               echo "skip=true" >> "$GITHUB_OUTPUT"
           else
