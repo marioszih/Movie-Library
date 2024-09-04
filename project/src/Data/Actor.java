@@ -55,7 +55,5 @@ public class Actor {
 	
 	public String toString() {
 		return actorName+" ranking: "+ranking;
-
-		
 	}
 }
