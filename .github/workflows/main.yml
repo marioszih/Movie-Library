@@ -53,7 +53,7 @@ jobs:
       #   run: echo "The skip variable is set to ${{ env.skip }}"
 
       - name: Create pull request
-        if: '!steps.check.outputs.skip'
+        if: ${{ !steps.check.outputs.skip }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -61,5 +61,5 @@ jobs:
           gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
-        if: 'steps.check.outputs.skip'
+        if: ${{ steps.check.outputs.skip }}
         run: echo "A pull request from develop to main already exists, skipping creation."
