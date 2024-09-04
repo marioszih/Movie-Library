@@ -44,16 +44,16 @@ jobs:
           if [[ "$prs" == "Error" ]]; then
             echo "Error in listing PRs"
           elif ((prs > 0)); then
-              echo "skip=true" >> $GITHUB_ENV
+              echo "skip=true" >> $GITHUB_OUTPUT
           else
-              echo "skip=false" >> $GITHUB_ENV
+              echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Debug skip variable
         run: echo "The skip variable is set to ${{ env.skip }}"
 
       - name: Create pull request
-        if: ${{ env.skip == 'false' }}
+        if: '!steps.check.outputs.skip'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -61,5 +61,5 @@ jobs:
           gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
-        if: ${{ env.skip == 'true' }}
+        if: 'steps.check.outputs.skip'
         run: echo "A pull request from develop to main already exists, skipping creation."
