@@ -39,7 +39,6 @@ jobs:
               --base 'develop' \
               --json title \
               --jq 'length' || echo "Error")
-          prs="Error"
           echo "PRs count: $prs"
           if [[ "$prs" == "Error" ]]; then
             echo "The workflow encountered a problem."
