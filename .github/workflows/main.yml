@@ -48,9 +48,7 @@ jobs:
 
       - name: Create pull request
         if: ${{ steps.check.outputs.skip  == 'false' }}
-        run: |
-          echo "Creating pull request..."
-          gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+        run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
