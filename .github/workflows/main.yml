@@ -32,9 +32,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Initialize skip with a default value
-          echo "skip=false" >> $GITHUB_ENV
-          
           # Print the current branch and repo for debugging
           echo "Repository: $GITHUB_REPOSITORY"
           echo "Checking PRs from develop to main..."
@@ -42,8 +39,8 @@ jobs:
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
-              --head 'develop' \
-              --base 'main' \
+              --head 'main' \
+              --base 'develop' \
               --json title \
               --jq 'length' || echo "Error")
           
