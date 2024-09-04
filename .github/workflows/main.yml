@@ -16,10 +16,10 @@ jobs:
           fetch-depth: 0 
 
       - name: Fetch to the latest state of main branch
-      run: |
-        git fetch origin main
-        git checkout main
-        git pull origin main
+        run: |
+          git fetch origin main
+          git checkout main
+          git pull origin main
 
   downmerge:
     runs-on: ubuntu-latest
