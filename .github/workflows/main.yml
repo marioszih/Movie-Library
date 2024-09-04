@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: update-main
     steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        
       - name: Check if PR exists
         id: check
         env:
