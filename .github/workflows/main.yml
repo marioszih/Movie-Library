@@ -43,8 +43,7 @@ jobs:
           echo "PRs count: $prs"
           if [[ "$prs" == "Error" ]]; then
             echo "The workflow encountered a problem."
-            gh run cancel ${{ github.run_id }}
-            gh run watch ${{ github.run_id }}
+            exit 1
           elif ((prs > 0)); then
               echo "skip=true" >> "$GITHUB_OUTPUT"
           else
