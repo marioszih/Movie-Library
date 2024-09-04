@@ -1,5 +1,4 @@
 name: Auto Downmerge Main to Develop
-
 on:
   push:
     branches:
