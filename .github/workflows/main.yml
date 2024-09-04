@@ -11,44 +11,23 @@ on:
       - closed
 
 jobs:
-  downmerge:
+  update-main:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true || github.event_name == 'push'
 
     steps:
+      - name: Ensuring main is updated
+        run: echo "Waiting for main to be fully updated..."
+
+  downmerge:
+    runs-on: ubuntu-latest
+    needs: update-main
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-          
-      - name: Add a delay to avoid race conditions
-        run: sleep 10 
 
       - name: create pull-request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
             gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
-
-      - name: get release branches
-        run: |
-            git fetch --all
-            export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
-            oldest_branch=""
-            if [ -z "$BRANCHES" ]; then
-              echo "No release branches found."
-            else
-              for branch in $BRANCHES; do
-                current_version=${branch#release/}
-                if [ -z "$oldest_branch" ]; then
-                  oldest_branch=$branch
-                else
-                  oldest_version=${oldest_branch#release/}
-                  if [ "$(printf '%s\n' "$oldest_version" "$current_version" | sort -V | head -n1)" = "$current_version" ]; then
-                    oldest_branch=$branch
-                  fi
-                fi
-              done
-            fi
-            echo "oldest_branch=$oldest_branch" >> $GITHUB_ENV
-      - name: Use oldest branch
-        run: |
-          echo "The oldest branch is ${{ env.oldest_branch }}"
