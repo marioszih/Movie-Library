@@ -15,11 +15,11 @@ jobs:
         with:
           fetch-depth: 0 
 
-      - name: Fetch and reset to the latest state of remote main branch
-        run: |
-          git fetch origin main
-          git checkout main
-          git pull origin main
+      - name: Fetch to the latest state of main branch
+      run: |
+        git fetch origin main
+        git checkout main
+        git pull origin main
 
   downmerge:
     runs-on: ubuntu-latest
