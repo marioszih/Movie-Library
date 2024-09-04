@@ -11,16 +11,20 @@ jobs:
     if: github.event_name == 'push' 
 
     steps:
-      - name: Ensuring main is updated
-        run: echo "Waiting for main to be fully updated..."
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Fetch and reset to the latest state of remote main branch
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
 
   downmerge:
     runs-on: ubuntu-latest
     needs: update-main
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Check if PR exists
         id: check
         env:
