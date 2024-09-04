@@ -41,7 +41,6 @@ jobs:
               --jq 'length' || echo "Error")
           
           echo "PRs count: $prs"
-          
           if [[ "$prs" == "Error" ]]; then
             echo "Error in listing PRs"
           elif ((prs > 0)); then
