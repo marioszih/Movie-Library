@@ -74,6 +74,7 @@ jobs:
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
+          echo " ${{ github.event.pull_request.base.ref }}"
           if [[ "$prs" == "Error" ]]; then
             echo "The workflow encountered a problem."
             exit 1
