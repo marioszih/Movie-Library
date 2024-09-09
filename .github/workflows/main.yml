@@ -17,30 +17,46 @@ jobs:
         with:
           fetch-depth: 0 
 
-      - name: get release branches 
+      - name: get release branches
         id: earliestRelease
         run: |
+            changedBranch=${GITHUB_REF#refs/heads/} #This gets the base of the pr that triggered this workflow
             git fetch --all
             export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
             baseBranch=""
+            branchFound=false
             if [ -z "$BRANCHES" ]; then
               echo "No release branches found."
               echo "baseBranch=develop" >> "$GITHUB_OUTPUT"
               exit 0;
             else
-              for branch in $BRANCHES; do
-                current_version=${branch#release/}
-                if [ -z "$baseBranch" ]; then
-                  baseBranch=$branch
-                else
-                  oldest_version=${baseBranch#release/}
-                  if [ "$(printf '%s\n' "$oldest_version" "$current_version" | sort -V | head -n1)" = "$current_version" ]; then
+              sorted_branches=$(echo "$BRANCHES" | sort -V)
+              if [ "$changedBranch" = "main" ]; then
+                # If the changed branch is main, we need the oldest branch
+                baseBranch=$(echo "$sorted_branches" | head -n 1)
+              else
+                # For release branches, find the next branch after the changedBranch
+                for branch in $sorted_branches; do
+                  current_version=${branch#release/}
+                  if [ "$branchFound" = true ]; then
                     baseBranch=$branch
+                    break
                   fi
+                  # Check if the current branch is the changedBranch
+                  if [ "$branch" = "$changedBranch" ]; then
+                    branchFound=true
+                  fi
+                done
+                # If no next branch was found, default to the changedBranch itself
+                if [ -z "$baseBranch" ]; then
+                  echo "No next branch found. Staying on $changedBranch."
+                  baseBranch="develop"
                 fi
-              done
-            fi
+              fi
+            echo "Base branch is $baseBranch."
             echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
+                      fi
+                      echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
 
       - name: Branches list
         run: echo "The branches are ${{ steps.earliestRelease.outputs.baseBranch }}"
@@ -66,11 +82,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          changedBranch=${GITHUB_REF#refs/heads/}
+          changedBranch=${GITHUB_REF#refs/heads/} #This gets the base of the pr that triggered this workflow
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
-              --head 'main' \
+              --head '$changedBranch' \
               --base '${{ needs.get-base-branches.outputs.baseBranch }}' \
               --json title \
               --jq 'length' || echo "Error")
