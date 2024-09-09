@@ -53,7 +53,8 @@ jobs:
 
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
-        run: echo "A pull request from develop to main already exists, skipping creation."
+        run: echo "A pull request from main to develop already exists, skipping creation."
+
   downmerge-main-to-earliest-release:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
@@ -89,3 +90,39 @@ jobs:
             
       - name: Use oldest branch
         run: echo "The oldest branch is ${{ steps.earliestRelease.outputs.oldestBranch }}"
+
+      - name: Check if PR exists
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Attempt to list PRs
+          prs=$(gh pr list \
+              --repo "$GITHUB_REPOSITORY" \
+              --head 'main' \
+              --base '${{ steps.earliestRelease.outputs.oldestBranch }}' \
+              --json title \
+              --jq 'length' || echo "Error")
+          echo "PRs count: $prs"
+          if [[ "$prs" == "Error" ]]; then
+            echo "The workflow encountered a problem."
+            exit 1
+          elif ((prs > 0)); then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+          - name: Debug skip variable
+
+      - name: Debug skip variable
+        run: echo "The skip variable is set to ${{ steps.check.outputs.skip }}"
+
+      - name: Create pull request
+        if: ${{ steps.check.outputs.skip  == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr create --base ${{ steps.earliestRelease.outputs.oldestBranch }} --title "Automatic merge main into ${{ steps.earliestRelease.outputs.oldestBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+
+      - name: PR Already Exists Message
+        if: ${{ steps.check.outputs.skip  == 'true' }}
+        run: echo "A pull request from main to ${{ steps.earliestRelease.outputs.oldestBranch }} already exists, skipping creation."
