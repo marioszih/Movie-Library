@@ -51,7 +51,7 @@ jobs:
     if: github.event_name == 'push'
     strategy:
       matrix:
-        branches: ${{ fromJson(needs.get-base-branches.outputs.baseBranch) }}
+        branches: ${{ needs.get-base-branches.outputs.baseBranch }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
