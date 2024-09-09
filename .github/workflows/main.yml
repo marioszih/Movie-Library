@@ -30,17 +30,30 @@ jobs:
               echo "baseBranch=develop" >> "$GITHUB_OUTPUT"
               exit 0;
             else
-              branches=$(git branch -r | grep 'release/' | sed 's/origin\///' | sed 's/release\///' | sort -V)
-              sorted_branches=$(echo "$branches" | awk '{print "release/" $0}')
+              branches=$(git branch -r | grep 'release/' | sed 's/origin\///' | sed 's/release\///')
+
+              # Pad single-digit components with a leading zero and sort
+              sorted_branches=$(echo "$branches" | awk -F. '
+                {
+                  # Pad each component with a leading zero if needed
+                  for (i=1; i<=NF; i++) {
+                    if (length($i) == 1) 
+                      $i = $i"0";
+                  }
+                  # Output the padded version string
+                  print $0
+                }' | sort -V)
+              # Add back the release/ prefix
+              sorted_branches=$(echo "$sorted_branches" | sed 's/^/release\//')
               if [ "$changedBranch" = "main" ]; then
                 # If the changed branch is main, we need the oldest branch
-                baseBranch=$(echo "$sorted_branches" | head -n 1)
+                baseBranch="release/$(echo "$sorted_branches" | head -n 1)"
               else
                 # For release branches, find the next branch after the changedBranch
                 for branch in $sorted_branches; do
                   current_version=${branch#release/}
                   if [ "$branchFound" = true ]; then
-                    baseBranch=$branch
+                    baseBranch="release/$branch"
                     break
                   fi
                   # Check if the current branch is the changedBranch
