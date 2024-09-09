@@ -49,9 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [get-base-branches]
     if: github.event_name == 'push'
-    strategy:
-      matrix:
-        branches: ${{ needs.get-base-branches.outputs.baseBranch }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -73,7 +70,7 @@ jobs:
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
               --head 'main' \
-              --base '${{ matrix.branches }}' \
+              --base '${{ needs.get-base-branches.outputs.baseBranch }}' \
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
@@ -93,8 +90,8 @@ jobs:
         if: ${{ steps.check.outputs.skip  == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr create --base ${{ matrix.branches }} --title "Automatic merge main into ${{ matrix.branches }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+        run: gh pr create --base ${{ needs.get-base-branches.outputs.baseBranch }} --title "Automatic merge main into ${{ needs.get-base-branches.outputs.baseBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
-        run: echo "A pull request from main to ${{ matrix.branches }} already exists, skipping creation."
+        run: echo "A pull request from main to ${{ needs.get-base-branches.outputs.baseBranch }} already exists, skipping creation."
