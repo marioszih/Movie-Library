@@ -41,8 +41,8 @@ jobs:
             fi
             echo "oldestBranch=[\"develop\", \"$oldestBranch\"]" >> "$GITHUB_OUTPUT"
             
-      - name: Use oldest branch
-        run: echo "The oldest branch is ${{ steps.earliestRelease.outputs.oldestBranch }}"
+      - name: Branches list
+        run: echo "The branches are ${{ steps.earliestRelease.outputs.oldestBranch }}"
 
   downmerge-main:
     runs-on: ubuntu-latest
