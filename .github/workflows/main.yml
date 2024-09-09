@@ -5,9 +5,9 @@ on:
       - main
 
 jobs:
-  update-main:
+  downmerge:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' 
+    if: github.event_name == 'push'
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -20,10 +20,6 @@ jobs:
           git checkout main
           git pull origin main
 
-  downmerge:
-    runs-on: ubuntu-latest
-    needs: update-main
-    steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
 
