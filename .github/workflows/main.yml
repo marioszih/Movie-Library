@@ -82,7 +82,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          changedBranch=${GITHUB_REF#refs/heads/} #This gets the base of the pr that triggered this workflow
+          changedBranch=${GITHUB_REF#refs/heads/} >> "$GITHUB_OUTPUT" #This gets the base of the pr that triggered this workflow
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
@@ -108,7 +108,7 @@ jobs:
         if: ${{ steps.check.outputs.skip  == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr create --base ${{ needs.get-base-branches.outputs.baseBranch }} --title "Automatic merge main into ${{ needs.get-base-branches.outputs.baseBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+        run: gh pr create --base ${{ needs.get-base-branches.outputs.baseBranch }} --title "Automatic merge ${{ steps.check.outputs.changedBranch }} into ${{ needs.get-base-branches.outputs.baseBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
