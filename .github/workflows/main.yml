@@ -1,29 +1,59 @@
 name: Auto Downmerge Main to Develop
-
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
 
 jobs:
   downmerge:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true || github.event_name == 'push'
-
+    if: github.event_name == 'push'
     steps:
-      - name: Checkout repository
+      - name: Checkout the repository
         uses: actions/checkout@v4
-          
-      - name: Add a delay to avoid race conditions
-        run: sleep 10 
+        with:
+          fetch-depth: 0 
 
-      - name: create pull-request
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Fetch to the latest state of main branch
         run: |
-            gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by Github action' --assignee "${{ github.actor }}"
+          git fetch origin main
+          git checkout main
+          git pull origin main
+
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Check if PR exists
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Attempt to list PRs
+          prs=$(gh pr list \
+              --repo "$GITHUB_REPOSITORY" \
+              --head 'main' \
+              --base 'develop' \
+              --json title \
+              --jq 'length' || echo "Error")
+          echo "PRs count: $prs"
+          if [[ "$prs" == "Error" ]]; then
+            echo "The workflow encountered a problem."
+            exit 1
+          elif ((prs > 0)); then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Debug skip variable
+        run: echo "The skip variable is set to ${{ steps.check.outputs.skip }}"
+
+      - name: Create pull request
+        if: ${{ steps.check.outputs.skip  == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+
+      - name: PR Already Exists Message
+        if: ${{ steps.check.outputs.skip  == 'true' }}
+        run: echo "A pull request from develop to main already exists, skipping creation."
