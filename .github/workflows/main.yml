@@ -66,6 +66,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          BRANCH_NAME= ${{ github.ref }}
+          changedBranch= ${BRANCH_NAME#refs/heads/}
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
@@ -74,7 +76,7 @@ jobs:
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
-          echo "Changes were pushed to branch: ${{ github.ref }}"
+          echo "Changes were pushed to branch: $changedBranch"
           if [[ "$prs" == "Error" ]]; then
             echo "The workflow encountered a problem."
             exit 1
