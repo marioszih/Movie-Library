@@ -6,9 +6,31 @@ on:
       - 'release/*'
 
 jobs:
+
+  check-if-new-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if there are changes
+        id: check-changes
+        run: |
+          # Fetch the latest commits
+          git fetch
+
+          # Check if the branch has any changes
+          if git diff --quiet origin/${GITHUB_REF#refs/heads/} HEAD; then
+            echo "No changes detected. Skipping workflow."
+            exit 1
+          else
+            echo "Changes detected. Proceeding with workflow."
+          fi
+
   get-base-branches: # finds the earliest release branch if it exists
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    needs: check-if-new-branch
+    if: github.event_name == 'push' && ${{ success() }}
     outputs:
       baseBranch: ${{ steps.earliestRelease.outputs.baseBranch }}
     steps:
@@ -64,7 +86,7 @@ jobs:
   downmerge-main: # creates the pr's to the branch returned from the get-base-branches job
     runs-on: ubuntu-latest
     needs: [get-base-branches]
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && ${{ success() }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
