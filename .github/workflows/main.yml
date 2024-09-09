@@ -66,8 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          BRANCH_NAME= ${{ github.ref }}
-          changedBranch= ${BRANCH_NAME#refs/heads/}
+          changedBranch=${GITHUB_REF#refs/heads/}
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
