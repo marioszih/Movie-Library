@@ -5,7 +5,7 @@ on:
       - main
 
 jobs:
-  downmerge:
+  downmerge-main-to-develop:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -15,8 +15,7 @@ jobs:
           fetch-depth: 0 
 
       - name: Fetch to the latest state of main branch
-        run: |
-          git pull origin main
+        run: git pull origin main
 
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -55,3 +54,32 @@ jobs:
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
         run: echo "A pull request from develop to main already exists, skipping creation."
+  downmerge-main-to-earliest-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: get release branches
+        id: earliestRelease
+        run: |
+            git fetch --all
+            export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
+            oldestBranch=""
+            if [ -z "$BRANCHES" ]; then
+              echo "No release branches found."
+              exit 1;
+            else
+              for branch in $BRANCHES; do
+                current_version=${branch#release/}
+                if [ -z "$oldestBranch" ]; then
+                  oldestBranch=$branch
+                else
+                  oldest_version=${oldestBranch#release/}
+                  if [ "$(printf '%s\n' "$oldest_version" "$current_version" | sort -V | head -n1)" = "$current_version" ]; then
+                    oldestBranch=$branch
+                  fi
+                fi
+              done
+            fi
+            echo "oldestBranch=$oldestBranch" >> "$GITHUB_OUTPUT"
+      - name: Use oldest branch
+        run: echo "The oldest branch is ${{ steps.earliestRelease.outputs.oldestBranch }}"
