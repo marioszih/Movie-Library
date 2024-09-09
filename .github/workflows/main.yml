@@ -3,10 +3,67 @@ on:
   push:
     branches:
       - main
+      - 'release/*'
 
 jobs:
-  downmerge:
+  get-base-branches: # finds the earliest release branch if it exists
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    outputs:
+      baseBranch: ${{ steps.earliestRelease.outputs.baseBranch }}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: get release branches
+        id: earliestRelease
+        run: |
+            changedBranch=${GITHUB_REF#refs/heads/} #This gets the base of the pr that triggered this workflow
+            git fetch --all
+            export BRANCHES=$(git branch -r | grep 'release/' | sed 's/origin\///')
+            baseBranch=""
+            branchFound=false
+            if [ -z "$BRANCHES" ]; then
+              echo "No release branches found."
+              echo "baseBranch=develop" >> "$GITHUB_OUTPUT"
+              exit 0;
+            else
+              sorted_branches=$(echo "$BRANCHES" | sort -V)
+              if [ "$changedBranch" = "main" ]; then
+                # If the changed branch is main, we need the oldest branch
+                baseBranch=$(echo "$sorted_branches" | head -n 1)
+              else
+                # For release branches, find the next branch after the changedBranch
+                for branch in $sorted_branches; do
+                  current_version=${branch#release/}
+                  if [ "$branchFound" = true ]; then
+                    baseBranch=$branch
+                    break
+                  fi
+                  # Check if the current branch is the changedBranch
+                  if [ "$branch" = "$changedBranch" ]; then
+                    branchFound=true
+                  fi
+                done
+                # If no next branch was found, default to the changedBranch itself
+                if [ -z "$baseBranch" ]; then
+                  echo "No next branch found. Staying on $changedBranch."
+                  baseBranch="develop"
+                fi
+              fi
+            echo "Base branch is $baseBranch."
+            echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
+                      fi
+                      echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
+
+      - name: Branches list
+        run: echo "The branches are ${{ steps.earliestRelease.outputs.baseBranch }}"
+
+  downmerge-main: # creates the pr's to the branch returned from the get-base-branches job
+    runs-on: ubuntu-latest
+    needs: [get-base-branches]
     if: github.event_name == 'push'
     steps:
       - name: Checkout the repository
@@ -15,10 +72,7 @@ jobs:
           fetch-depth: 0 
 
       - name: Fetch to the latest state of main branch
-        run: |
-          git fetch origin main
-          git checkout main
-          git pull origin main
+        run: git pull origin main
 
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -28,14 +82,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          changedBranch=${GITHUB_REF#refs/heads/} #This gets the base of the pr that triggered this workflow
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
-              --head 'main' \
-              --base 'develop' \
+              --head '$changedBranch' \
+              --base '${{ needs.get-base-branches.outputs.baseBranch }}' \
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
+          echo "Changes were pushed to branch: $changedBranch"
           if [[ "$prs" == "Error" ]]; then
             echo "The workflow encountered a problem."
             exit 1
@@ -52,8 +108,8 @@ jobs:
         if: ${{ steps.check.outputs.skip  == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr create --base develop --title "Automatic merge main into develop" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+        run: gh pr create --base ${{ needs.get-base-branches.outputs.baseBranch }} --title "Automatic merge main into ${{ needs.get-base-branches.outputs.baseBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
-        run: echo "A pull request from develop to main already exists, skipping creation."
+        run: echo "A pull request from main to ${{ needs.get-base-branches.outputs.baseBranch }} already exists, skipping creation."
