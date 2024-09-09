@@ -100,7 +100,7 @@ jobs:
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
               --head 'main' \
-              --base '${{ steps.earliestRelease.outputs.oldestBranch }}' \
+              --base ${{ steps.earliestRelease.outputs.oldestBranch }} \
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
