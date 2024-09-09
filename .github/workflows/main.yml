@@ -79,7 +79,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          changedBranch=${GITHUB_REF#refs/heads/} >> "$GITHUB_OUTPUT" #This gets the base of the pr that triggered this workflow
+          changedBranch=${GITHUB_REF#refs/heads/} #This gets the base of the pr that triggered this workflow
+          echo $changedBranch >> "$GITHUB_OUTPUT"
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
