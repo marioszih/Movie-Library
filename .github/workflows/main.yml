@@ -30,7 +30,8 @@ jobs:
               echo "baseBranch=develop" >> "$GITHUB_OUTPUT"
               exit 0;
             else
-              sorted_branches=$(echo "$BRANCHES" | sort -V)
+              branches=$(git branch -r | grep 'release/' | sed 's/origin\///' | sed 's/release\///' | sort -V)
+              sorted_branches=$(echo "$branches" | awk '{print "release/" $0}')
               if [ "$changedBranch" = "main" ]; then
                 # If the changed branch is main, we need the oldest branch
                 baseBranch=$(echo "$sorted_branches" | head -n 1)
