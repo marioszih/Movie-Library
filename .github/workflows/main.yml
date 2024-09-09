@@ -40,7 +40,7 @@ jobs:
               done
             fi
             echo "oldestBranch=[\"develop\", \"$oldestBranch\"]" >> "$GITHUB_OUTPUT"
-    
+  
       - name: Branches list
         run: echo "The branches are ${{ steps.earliestRelease.outputs.oldestBranch }}"
 
