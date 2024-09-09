@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     outputs:
-      earliestReleaseBranch: ${{ steps.earliestRelease.outputs.baseBranches }}
+      baseBranches: ${{ steps.earliestRelease.outputs.baseBranches }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
     if: github.event_name == 'push'
     strategy:
       matrix:
-        branches: ${{ fromJson(needs.get-base-branches.outputs.earliestReleaseBranch) }}
+        branches: ${{ fromJson(needs.get-base-branches.outputs.baseBranches) }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
