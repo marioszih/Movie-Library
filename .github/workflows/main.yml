@@ -5,11 +5,9 @@ on:
       - main
       - 'release/*'
 
-  create:
-
 jobs:
 
-  check-if-new-branch:
+  check-if-new-branch: #checks if a create event got triggered, meaning a new release branch was created and we need to stop it from running
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,16 +16,14 @@ jobs:
       - name: Check if there are changes
         id: check-changes
         run: |
-          if [ "${{ github.event_name }}" == "create" ]; then
-            echo "This is a branch creation event."
+          # Check if the push event created a new branch or tag
+          if [ "${{ github.event.created }}" == "true" ]; then
+            echo "This push created a new branch or tag."
             echo "is_new_branch=true" >> $GITHUB_ENV
             exit 1
-          elif [ "${{ github.event_name }}" == "push" ]; then
-            echo "This is a push event."
-            echo "is_new_branch=false" >> $GITHUB_ENV
           else
-            echo "Unexpected event."
-            exit 1
+            echo "This push did not create a new branch or tag."
+            echo "is_new_branch=false" >> $GITHUB_ENV
           fi
 
   get-base-branches: # finds the earliest release branch if it exists
