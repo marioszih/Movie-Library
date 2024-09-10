@@ -5,6 +5,8 @@ on:
       - main
       - 'release/*'
 
+  create:
+
 jobs:
 
   check-if-new-branch:
@@ -12,27 +14,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 
 
       - name: Check if there are changes
         id: check-changes
         run: |
-          git fetch origin
-          # Get the branch name
-          BRANCH_NAME="${GITHUB_REF#refs/heads/} "
-
-          # Get the number of commits in the branch
-          COMMIT_COUNT=$(git rev-list --count HEAD)
-
-          # Determine if the branch is new
-          if [ "$COMMIT_COUNT" -le 1 ]; then
-            echo "New branch detected with commit count: $COMMIT_COUNT"
-            echo "new_branch=true" >> "$GITHUB_ENV"
+          if [ "${{ github.event_name }}" == "create" ]; then
+            echo "This is a branch creation event."
+            echo "is_new_branch=true" >> $GITHUB_ENV
             exit 1
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "This is a push event."
+            echo "is_new_branch=false" >> $GITHUB_ENV
           else
-            echo "Branch with commit count: $COMMIT_COUNT"
-            echo "new_branch=false" >> "$GITHUB_ENV"
+            echo "Unexpected event."
+            exit 1
           fi
 
   get-base-branches: # finds the earliest release branch if it exists
