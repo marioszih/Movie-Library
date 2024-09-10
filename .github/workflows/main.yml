@@ -17,15 +17,20 @@ jobs:
         id: check-changes
         run: |
           git fetch origin
-          # Check the reflog to see if the first reflog entry mentions branch creation
-          CREATION_LOG=$(git reflog show --date=iso | grep 'branch: Created from')
-          if [ -n "$CREATION_LOG" ]; then
-            echo "Branch creation detected."
-            echo "new_branch_creation=true" >> "$GITHUB_ENV"
+          # Get the branch name
+          BRANCH_NAME="${GITHUB_REF#refs/heads/} "
+
+          # Get the number of commits in the branch
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+
+          # Determine if the branch is new
+          if [ "$COMMIT_COUNT" -le 1 ]; then
+            echo "New branch detected with commit count: $COMMIT_COUNT"
+            echo "new_branch=true" >> "$GITHUB_ENV"
             exit 1
           else
-            echo "No branch creation detected. Proceeding with workflow."
-            echo "new_branch_creation=false" >> "$GITHUB_ENV"
+            echo "Branch with commit count: $COMMIT_COUNT"
+            echo "new_branch=false" >> "$GITHUB_ENV"
           fi
 
   get-base-branches: # finds the earliest release branch if it exists
