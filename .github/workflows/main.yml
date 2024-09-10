@@ -70,9 +70,10 @@ jobs:
                   baseBranch="develop"
                 fi
               fi
+            fi
+            baseBranch=$(echo "$baseBranch" | xargs)
             echo "Base branch is $baseBranch."
             echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
-            fi
 
   downmerge-main: # creates the pr's to the branch returned from the get-base-branches job
     runs-on: ubuntu-latest
