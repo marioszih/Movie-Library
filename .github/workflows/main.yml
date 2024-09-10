@@ -75,8 +75,8 @@ jobs:
             echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
             fi
 
-      - name: Branches list
-        run: echo "The branches are ${{ steps.earliestRelease.outputs.baseBranch }}"
+      - name: Base Branch
+        run: echo "The base branch for the automated pr is ${{ steps.earliestRelease.outputs.baseBranch }}"
 
   downmerge-main: # creates the pr's to the branch returned from the get-base-branches job
     runs-on: ubuntu-latest
