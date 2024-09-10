@@ -6,7 +6,6 @@ on:
       - 'release/*'
 
 jobs:
-
   check-if-new-branch: #checks if a create event got triggered, meaning a new release branch was created and we need to stop it from running
     runs-on: ubuntu-latest
     steps:
@@ -23,7 +22,7 @@ jobs:
             echo "This push did not create a new branch or tag. Proceeding."
           fi
 
-  get-base-branches: # finds the earliest release branch if it exists
+  get-base-branch: # finds the earliest release branch if it exists
     runs-on: ubuntu-latest
     needs: check-if-new-branch
     outputs:
@@ -75,14 +74,14 @@ jobs:
             echo "Base branch is $baseBranch."
             echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
 
-  downmerge-main: # creates the pr's to the branch returned from the get-base-branches job
+  downmerge-main: # creates the pr's to the branch returned from the get-base-branch job
     runs-on: ubuntu-latest
-    needs: [get-base-branches, check-if-new-branch]
+    needs: [get-base-branch, check-if-new-branch]
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: Fetch to the latest state of main branch
         run: git pull origin main
@@ -98,7 +97,7 @@ jobs:
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
               --head "$changedBranch" \
-              --base "${{ needs.get-base-branches.outputs.baseBranch }}" \
+              --base "${{ needs.get-base-branch.outputs.baseBranch }}" \
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
@@ -119,8 +118,8 @@ jobs:
         if: ${{ steps.check.outputs.skip  == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr create --base ${{ needs.get-base-branches.outputs.baseBranch }} --title "Automatic merge ${{ steps.check.outputs.changedBranch }} into ${{ needs.get-base-branches.outputs.baseBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
+        run: gh pr create --base ${{ needs.get-base-branch.outputs.baseBranch }} --title "Automatic merge ${{ steps.check.outputs.changedBranch }} into ${{ needs.get-base-branch.outputs.baseBranch }}" --body 'Created by GitHub action' --assignee "${{ github.actor }}"
 
       - name: PR Already Exists Message
         if: ${{ steps.check.outputs.skip  == 'true' }}
-        run: echo "A pull request from main to ${{ needs.get-base-branches.outputs.baseBranch }} already exists, skipping creation."
+        run: echo "A pull request from main to ${{ needs.get-base-branch.outputs.baseBranch }} already exists, skipping creation."
