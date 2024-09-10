@@ -20,7 +20,7 @@ jobs:
           
           # Check if this push contains any changes (if no changes, it means it's a branch creation)
           if git diff --quiet origin/${GITHUB_REF#refs/heads/} HEAD; then
-            echo "No changes detected, this is likely a branch creation. Skipping the workflow."
+            echo "No changes detected in origin/${GITHUB_REF#refs/heads/}, this is likely a branch creation. Skipping the workflow."
             exit 1
           else
             echo "Changes detected, proceeding with the workflow."
