@@ -5,6 +5,8 @@ on:
       - main
       - 'release/*'
 
+  create:
+
 jobs:
 
   check-if-new-branch:
@@ -16,19 +18,16 @@ jobs:
       - name: Check if there are changes
         id: check-changes
         run: |
-          branch_name=${GITHUB_REF#refs/heads/}
-          echo "Checking commit history for branch: $branch_name"
-          git fetch origin
-
-          # Check if the branch has more than one commit
-          commit_count=$(git rev-list --count origin/$branch_name)
-
-          if [ "$commit_count" -le 1 ]; then
-            echo "Branch $branch_name is newly created or has very few commits. Skipping workflow."
-            echo "skip=true" >> $GITHUB_ENV
+          if [ "${{ github.event_name }}" == "create" ]; then
+            echo "This is a branch creation event."
+            echo "is_new_branch=true" >> $GITHUB_ENV
+            exit 1
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "This is a push event."
+            echo "is_new_branch=false" >> $GITHUB_ENV
           else
-            echo "Branch $branch_name has multiple commits. Proceeding with workflow."
-            echo "skip=false" >> $GITHUB_ENV
+            echo "Unexpected event."
+            exit 1
           fi
 
   get-base-branches: # finds the earliest release branch if it exists
