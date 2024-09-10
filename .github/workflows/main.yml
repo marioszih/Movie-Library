@@ -17,13 +17,15 @@ jobs:
         id: check-changes
         run: |
           git fetch origin
-          
-          # Check if this push contains any changes (if no changes, it means it's a branch creation)
-          if git diff --quiet origin/${GITHUB_REF#refs/heads/} HEAD; then
-            echo "No changes detected in origin/${GITHUB_REF#refs/heads/}, this is likely a branch creation. Skipping the workflow."
+          # Check if this is a branch creation push or an actual commit
+          NEW_COMMIT_COUNT=$(git rev-list --count HEAD ^origin/main)
+          if [[ "$NEW_COMMIT_COUNT" -eq 0 ]]; then
+            echo "No new commits found. This is likely a branch creation."
+            echo "new_branch_creation=true" >> "$GITHUB_ENV"
             exit 1
           else
-            echo "Changes detected, proceeding with the workflow."
+            echo "New commits found. Proceeding with workflow."
+            echo "new_branch_creation=false" >> "$GITHUB_ENV"
           fi
 
   get-base-branches: # finds the earliest release branch if it exists
