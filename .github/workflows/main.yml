@@ -7,32 +7,20 @@ on:
 
 jobs:
 
-  check-if-new-branch:
+  check-if-new-branch: #checks if a create event got triggered, meaning a new release branch was created and we need to stop it from running
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 
 
       - name: Check if there are changes
-        id: check-changes
         run: |
-          git fetch origin
-          # Get the branch name
-          BRANCH_NAME="${GITHUB_REF#refs/heads/} "
-
-          # Get the number of commits in the branch
-          COMMIT_COUNT=$(git rev-list --count HEAD)
-
-          # Determine if the branch is new
-          if [ "$COMMIT_COUNT" -le 1 ]; then
-            echo "New branch detected with commit count: $COMMIT_COUNT"
-            echo "new_branch=true" >> "$GITHUB_ENV"
+          # Check if the push event created a new branch or tag
+          if [ "${{ github.event.created }}" == "true" ]; then
+            echo "This push created a new branch or tag."
             exit 1
           else
-            echo "Branch with commit count: $COMMIT_COUNT"
-            echo "new_branch=false" >> "$GITHUB_ENV"
+            echo "This push did not create a new branch or tag. Proceeding."
           fi
 
   get-base-branches: # finds the earliest release branch if it exists
@@ -44,7 +32,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: get release branches
         id: earliestRelease
@@ -82,13 +70,10 @@ jobs:
                   baseBranch="develop"
                 fi
               fi
+            fi
+            baseBranch=$(echo "$baseBranch" | xargs)
             echo "Base branch is $baseBranch."
             echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
-                      fi
-                      echo "baseBranch=$baseBranch" >> "$GITHUB_OUTPUT"
-
-      - name: Branches list
-        run: echo "The branches are ${{ steps.earliestRelease.outputs.baseBranch }}"
 
   downmerge-main: # creates the pr's to the branch returned from the get-base-branches job
     runs-on: ubuntu-latest
@@ -112,8 +97,8 @@ jobs:
           # Attempt to list PRs
           prs=$(gh pr list \
               --repo "$GITHUB_REPOSITORY" \
-              --head '$changedBranch' \
-              --base '${{ needs.get-base-branches.outputs.baseBranch }}' \
+              --head "$changedBranch" \
+              --base "${{ needs.get-base-branches.outputs.baseBranch }}" \
               --json title \
               --jq 'length' || echo "Error")
           echo "PRs count: $prs"
