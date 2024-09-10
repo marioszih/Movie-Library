@@ -17,14 +17,14 @@ jobs:
         id: check-changes
         run: |
           git fetch origin
-          # Check if this is a branch creation push or an actual commit
-          NEW_COMMIT_COUNT=$(git rev-list --count HEAD ^origin/main)
-          if [[ "$NEW_COMMIT_COUNT" -eq 0 ]]; then
-            echo "No new commits found. This is likely a branch creation."
+          # Check the reflog to see if the first reflog entry mentions branch creation
+          CREATION_LOG=$(git reflog show --date=iso | grep 'branch: Created from')
+          if [ -n "$CREATION_LOG" ]; then
+            echo "Branch creation detected."
             echo "new_branch_creation=true" >> "$GITHUB_ENV"
             exit 1
           else
-            echo "New commits found. Proceeding with workflow."
+            echo "No branch creation detected. Proceeding with workflow."
             echo "new_branch_creation=false" >> "$GITHUB_ENV"
           fi
 
