@@ -21,7 +21,7 @@ jobs:
           BRANCH_NAME="${GITHUB_REF#refs/heads/} "
 
           # Get the number of commits in the branch
-          COMMIT_COUNT=$(git rev-list --count HEAD)
+          COMMIT_COUNT=$(git rev-list --count)
 
           # Determine if the branch is new
           if [ "$COMMIT_COUNT" -le 1 ]; then
